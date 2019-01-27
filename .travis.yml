@@ -1,0 +1,26 @@
+language: python
+
+python:
+  - "3.6"
+
+install:
+  - pip install -r deps.txt
+  - pip install coveralls
+
+env:
+  - DJANGO_SETTINGS_MODULE=Config.settings
+
+services:
+  - mysql
+
+script:
+  - python runtests.py
+  - coverage run --source=. manage.py test
+
+after_success:
+  - coveralls
+
+branches:
+  only:
+    - master
+    - develop
