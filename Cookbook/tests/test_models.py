@@ -1,7 +1,7 @@
 import datetime
 from django.test import TestCase
 
-from Cookbook.models import Cookbook, Step, Material, CookbookTag
+from Cookbook.models import Cookbook, Step, Material, CookbookTag, MaterialStepRelationship
 from Cookbook.defines import MaterialType
 
 
@@ -24,9 +24,18 @@ class CookbookModelTests(TestCase):
         )
 
         step1 = Step.objects.filter(name=step_str_1).first()
-        step1.material_set.create(
+        step1: Step
+
+        # ManyToMany Field With through cannot use create()
+        material_1 = Material.objects.create(
             name=material_str_1,
             type=MaterialType.TOOL
+        )
+        # 手动创建关联记录
+        MaterialStepRelationship.objects.create(
+            step=step1,
+            material=material_1,
+            amount='1个',
         )
 
         material_1 = Material.objects.filter(name=material_str_1).first()
@@ -44,6 +53,10 @@ class CookbookModelTests(TestCase):
             material_1,
             cookbook.materials
         )
+
+        self.assertIn(material_1, step1.materials_tool)
+
+        self.assertNotIn(material_1, step1.materials_food)
 
     def test_cookbook_tag(self):
         cookbook = Cookbook.objects.create(

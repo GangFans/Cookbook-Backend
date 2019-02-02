@@ -30,20 +30,18 @@ class CookbookTag(TimeStampedModel):
 
 class Material(TimeStampedModel):
     name = models.CharField("原料名称", max_length=255)
-    amount = models.CharField("原料数量", max_length=255, default='')
     detail = models.TextField("原料详情", default='')
     type = models.SmallIntegerField("原料类型", choices=(
-        (MaterialType.FOOD, '食材'),
-        (MaterialType.CONDIMENT, '调料'),
-        (MaterialType.TOOL, '工具'),
+        (MaterialType.FOOD.value, '食材'),
+        (MaterialType.CONDIMENT.value, '调料'),
+        (MaterialType.TOOL.value, '工具'),
     ))
-    priority = models.SmallIntegerField("优先级", default=0)
 
     img_url = models.URLField("原料图片", default='')
 
-    step = models.ForeignKey(
+    step = models.ManyToManyField(
         "Step",
-        on_delete=models.CASCADE,
+        through='MaterialStepRelationship',
         related_name="material_set"
     )
 
@@ -52,7 +50,7 @@ class Material(TimeStampedModel):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return f'{self.name} - {self.step}'
+        return f'{self.name}'
 
 
 class Step(TimeStampedModel):
@@ -84,13 +82,32 @@ class Step(TimeStampedModel):
         return str(self.duration)
 
     def get_material_set(self) -> List[Material]:
-        return self.material_set.order_by("priority", "id").all()
+        return self.material_set.order_by("materialsteprelationship__priority", "id").all()
+
+    def get_material_set_by_type(self, material_type_value: int) -> List[Material]:
+        return list(filter(
+            lambda material: material.type == material_type_value,
+            self.get_material_set()
+        ))
+
+    @property
+    def materials_food(self):
+        return self.get_material_set_by_type(MaterialType.FOOD.value)
+
+    @property
+    def materials_tool(self):
+        return self.get_material_set_by_type(MaterialType.TOOL.value)
+
+    @property
+    def materials_condiment(self):
+        return self.get_material_set_by_type(MaterialType.CONDIMENT.value)
 
 
 class Cookbook(TimeStampedModel):
     name = models.CharField("菜谱名称", max_length=255)
-    url_video = models.URLField("菜谱视频", default='')
-    url_cover_image = models.URLField("封面图", default='')
+    url_video = models.URLField("菜谱视频", default='', blank=True)
+    url_cover_image = models.URLField("封面图", default='', blank=True)
+    description = models.TextField("描述", default='', blank=True)
 
     tag_set = models.ManyToManyField(
         "CookbookTag",
@@ -126,3 +143,10 @@ class TagCookbookRelationship(models.Model):
     tag = models.ForeignKey(CookbookTag, on_delete=models.CASCADE)
     like = models.IntegerField('点赞数量', default=0)
     unlike = models.IntegerField('踩数量', default=0)
+
+
+class MaterialStepRelationship(models.Model):
+    step = models.ForeignKey(Step, on_delete=models.CASCADE)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    amount = models.CharField("原料数量", max_length=255, default='')
+    priority = models.SmallIntegerField("优先级", default=0)
