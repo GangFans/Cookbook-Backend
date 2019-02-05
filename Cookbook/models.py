@@ -127,6 +127,15 @@ class Step(TimeStampedModel):
     def materials_condiment(self):
         return self.get_material_set_by_type(MaterialType.CONDIMENT.value)
 
+    def admin_cookbook_url(self):
+        if self.id:
+            change_page_url = reverse_lazy(
+                'admin:Cookbook_cookbook_change', args=(self.cookbook_id,)
+            )
+            return mark_safe(f'<a href="{change_page_url}">对应菜谱</a>')
+        return ''
+    admin_cookbook_url.short_description = '对应菜谱'
+
 
 class Cookbook(TimeStampedModel):
     name = models.CharField("菜谱名称", max_length=255)
@@ -169,9 +178,15 @@ class TagCookbookRelationship(models.Model):
     like = models.IntegerField('点赞数量', default=0)
     unlike = models.IntegerField('踩数量', default=0)
 
+    def __str__(self):
+        return f'{self.cookbook.name} - {self.tag.name}'
+
 
 class MaterialStepRelationship(models.Model):
     step = models.ForeignKey(Step, on_delete=models.CASCADE)
     material = models.ForeignKey(Material, on_delete=models.CASCADE)
     amount = models.CharField("原料数量", max_length=255, default='')
     priority = models.SmallIntegerField("优先级", default=0)
+
+    def __str__(self):
+        return f'{self.step.name} - {self.material.name}'
