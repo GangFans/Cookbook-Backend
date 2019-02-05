@@ -2,6 +2,8 @@ import datetime
 from typing import List
 
 from django.db import models
+from django.urls import reverse_lazy
+from django.utils.safestring import mark_safe
 from model_utils.models import TimeStampedModel
 
 from .defines import MaterialType
@@ -72,10 +74,24 @@ class Step(TimeStampedModel):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return f'{self.name}'
+        return f'<步骤>{self.name}'
 
     def __repr__(self):
         return f'<CookbookStep>{str(self)}'
+
+    def admin_change_page_link(self):
+        """
+        材料inline中展示的 材料修改页链接
+        https://stackoverflow.com/questions/14308050/django-admin-nested-inline
+        :return:
+        """
+        if self.id:
+            change_page_url = reverse_lazy(
+                'admin:Cookbook_step_change', args=(self.id,)
+            )
+            return mark_safe(f'<a href="{change_page_url}" target="_blank">修改</a>')
+        return '保存后才能修改'
+    admin_change_page_link.short_description = '修改按钮'
 
     @property
     def duration_describe(self) -> str:
@@ -89,6 +105,15 @@ class Step(TimeStampedModel):
             lambda material: material.type == material_type_value,
             self.get_material_set()
         ))
+
+    def admin_material_set_list(self):
+        materials = self.get_material_set()
+        if len(materials) > 0:
+            return mark_safe('<br>'.join([
+                str(x) for x in self.get_material_set()
+            ]))
+        return ''
+    admin_material_set_list.short_description = '材料'
 
     @property
     def materials_food(self):

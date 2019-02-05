@@ -7,6 +7,8 @@ class StepInline(admin.TabularInline):
     model = Step
     fk_name = 'cookbook'
     extra = 1
+    fields = ('name', 'duration', 'admin_material_set_list', 'admin_change_page_link')
+    readonly_fields = ('admin_material_set_list', 'admin_change_page_link')
 
 
 @admin.register(Cookbook)
