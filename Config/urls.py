@@ -21,8 +21,8 @@ from rest_framework.routers import DefaultRouter
 from Cookbook.views import TagViewSet, CookbookViewSet
 
 router = DefaultRouter()
-router.register(r'tags', TagViewSet)
-router.register(r'cookbook', CookbookViewSet)
+router.register(r'tag', TagViewSet, basename='tag')
+router.register(r'cookbook', CookbookViewSet, basename='cookbook')
 
 
 urlpatterns = [

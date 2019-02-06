@@ -12,6 +12,11 @@ from .models import (
 
 
 class CookbookTagSerializer(serializers.HyperlinkedModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name='tag-detail',
+        lookup_field='pk'
+    )
+
     class Meta:
         model = CookbookTag
         fields = (

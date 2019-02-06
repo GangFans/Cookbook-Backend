@@ -21,11 +21,12 @@ class TagViewSet(viewsets.ModelViewSet):
     serializer_class = CookbookTagSerializer
     permission_classes = tuple()
     http_method_names = ('get',)
+    pagination_class = None
 
 
 class CookbookViewSet(viewsets.ModelViewSet):
     queryset = CookbookSerializer.setup_eager_loading(
-        Cookbook.objects.order_by('-created'),
+        Cookbook.public.order_by('-created'),
         select_related=CookbookSerializer.SELECT_RELATED_FIELDS,
         prefetch_related=CookbookSerializer.PREFETCH_RELATED_FIELDS
     )

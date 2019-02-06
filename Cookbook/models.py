@@ -142,6 +142,7 @@ class Cookbook(TimeStampedModel):
     url_video = models.URLField("菜谱视频", default='', blank=True)
     url_cover_image = models.URLField("封面图", default='', blank=True)
     description = models.TextField("描述", default='', blank=True)
+    checked = models.BooleanField("检查过 可展示", default=False)
 
     tag_set = models.ManyToManyField(
         "CookbookTag",
@@ -149,6 +150,13 @@ class Cookbook(TimeStampedModel):
         blank=True,
         through='TagCookbookRelationship'
     )
+
+    class CookbookPublicManager(models.Manager):
+        def get_queryset(self):
+            return super().get_queryset().filter(checked=True)
+
+    objects = models.Manager()
+    public = CookbookPublicManager()  # 已检查通过 可公开展示的菜谱
 
     @property
     def materials(self) -> List[Material]:
