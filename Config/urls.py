@@ -15,8 +15,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework.documentation import include_docs_urls
+from rest_framework.routers import DefaultRouter
+
+from Cookbook.views import TagViewSet, CookbookViewSet
+
+router = DefaultRouter()
+router.register(r'tags', TagViewSet)
+router.register(r'cookbook', CookbookViewSet)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('book/', include('Cookbook.urls', namespace='Book'))
+    path('book/', include('Cookbook.urls', namespace='Book')),
+
+    path('api-auth/', include('rest_framework.urls')),  # 仅仅用于测试
+    path('', include(router.urls)),
+    path('docs/', include_docs_urls(title='Cookbook-Backend API'))
 ]
